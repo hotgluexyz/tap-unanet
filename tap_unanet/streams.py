@@ -7,16 +7,10 @@ from singer_sdk import typing as th  # JSON Schema typing helpers
 
 from tap_unanet.client import UnanetStream
 
-# TODO: Delete this is if not using json files for schema definition
-SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
-# TODO: - Override `UsersStream` and `GroupsStream` with your own stream definition.
-#       - Copy-paste as many times as needed to create multiple stream types.
-
 
 class GeneralLedgerStream(UnanetStream):
     """Define custom stream."""
     name = "general_ledger"
-    schema_name = "ctec_corp"
     table_name = "general_ledger"
     primary_keys = ["general_ledger_key"]
     # replication_key = "transaction_date"
@@ -54,7 +48,6 @@ class GeneralLedgerStream(UnanetStream):
 class AccountsStream(UnanetStream):
     name = "accounts"
     primary_keys = ["account_key"]
-    schema_name = "ctec_corp"
     table_name = "account"
     replication_key = None
     schema = th.PropertiesList(
@@ -73,7 +66,6 @@ class AccountsStream(UnanetStream):
 class CustomersStream(UnanetStream):
     name = "customers"
     primary_keys = ["customer_key"]
-    schema_name = "ctec_corp"
     table_name = "customer"
     replication_key = "last_updated_timestamp"
     schema = th.PropertiesList(
@@ -114,7 +106,6 @@ class CustomersStream(UnanetStream):
 class PersonsStream(UnanetStream):
     name = "persons "
     primary_keys = ["person_key"]
-    schema_name = "ctec_corp"
     table_name = "person"
     replication_key = "last_updated_timestamp"
     schema = th.PropertiesList(
