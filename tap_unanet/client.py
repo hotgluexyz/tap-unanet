@@ -374,14 +374,6 @@ class UnanetStream(Stream):
     def schema_name(self):
         return self.config.get('schema_name')
 
-    @property
-    def table_name(self):
-        return self.config.get('table_name')
-
-    @property
-    def replication_key(self):
-        return self.config.get('replication_key')
-
     def next_page_token(self,context: Optional[dict] = None) -> Any:
         if self.total is None:
             self.total = self.get_total(context)
