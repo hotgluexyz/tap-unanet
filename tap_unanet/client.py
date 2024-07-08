@@ -388,6 +388,7 @@ class UnanetStream(Stream):
         return self.offset
     
     def get_total(self,context: Optional[dict] = None) -> Any:
+        self.logger.info(f"get_total: context: {context}, stream: {self.name}")
         query = f"SELECT COUNT(*) AS total FROM {self.schema_name}.{self.table_name}"
         if self.replication_key:
             start_date = self.get_starting_timestamp(context)
