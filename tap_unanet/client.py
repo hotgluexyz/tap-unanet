@@ -422,7 +422,7 @@ class UnanetStream(Stream):
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         try:
             selected_column_names = self.get_selected_schema()["properties"].keys()
-            self.logger.info(f"selected_column_names: {selected_column_names}")
+            # self.logger.info(f"selected_column_names: {selected_column_names}")
             combined_dict = dict(zip(selected_column_names, row))
             return combined_dict
         except Exception as e:
