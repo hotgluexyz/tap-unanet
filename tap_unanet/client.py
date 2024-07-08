@@ -77,10 +77,10 @@ class OdbcClient(metaclass=Singleton):
 
     def run_query_yield(self, query: str, *params):
         cursor = self._connection.cursor()
-        self.logger.info(f"query before: {query}")
+        # self.logger.info(f"query before: {query}")
         try:
             cursor.execute(query, *params)
-            self.logger.info(f"Running query yield: {query}")
+            # self.logger.info(f"Running query yield: {query}")
 
             row = cursor.fetchone()
 
@@ -378,16 +378,20 @@ class UnanetStream(Stream):
         if self.total is None:
             self.total = self.get_total(context)
         offset = self.page_size * self.page
+        self.logger.info(f"next_page_token: {offset}, {self.total}, {self.page}, finished: {self.finished}")
         self.page += 1
         self.offset = offset
-        if offset >= self.total:
+        # self.logger.info(f"offset condition: {(offset >= int(self.total))}")
+        if offset >= int(self.total):
             self.finished = True
+            self.logger.info(f"Setting finished: {self.finished}, stream: {self.name}")
         return self.offset
     
     def get_total(self,context: Optional[dict] = None) -> Any:
         query = f"SELECT COUNT(*) AS total FROM {self.schema_name}.{self.table_name}"
         if self.replication_key:
             start_date = self.get_starting_timestamp(context)
+            self.logger.info(f"get_total: context: {context}, stream: {self.name}, start_date: {start_date}")
             if start_date:
                 start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                 query = query + f" WHERE {self.replication_key} >= '{start_date}'"
@@ -422,7 +426,7 @@ class UnanetStream(Stream):
     def post_process(self, row: dict, context: dict | None = None) -> dict | None:
         try:
             selected_column_names = self.get_selected_schema()["properties"].keys()
-            self.logger.info(f"selected_column_names: {selected_column_names}")
+            # self.logger.info(f"selected_column_names: {selected_column_names}")
             combined_dict = dict(zip(selected_column_names, row))
             return combined_dict
         except Exception as e:
@@ -442,7 +446,7 @@ class UnanetStream(Stream):
                     start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
                     query = query + f" WHERE {self.replication_key} >= '{start_date}'"
                 query = query + f" ORDER BY {self.replication_key}"
-            offset = self.next_page_token()
+            offset = self.next_page_token(context)
             query = (
                 query + f" OFFSET {offset} ROWS FETCH NEXT {self.page_size} ROWS ONLY"
             )
