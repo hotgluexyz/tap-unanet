@@ -399,8 +399,8 @@ class UnanetStream(Stream):
             start_date = self.get_starting_timestamp(context)
             self.logger.info(f"get_total: context: {context}, stream: {self.name}, start_date: {start_date}")
             if start_date:
-                start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                query = query + f" WHERE {self.replication_key} >= '{start_date}'"
+                start_date = start_date.strftime("%Y-%m-%d %H:%M:%S.%f")
+                query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
                 if self.where_filters:
                     query = query + f" AND {self.where_filters}"
         connection = self.get_connection()
@@ -453,8 +453,8 @@ class UnanetStream(Stream):
             if self.replication_key:
                 start_date = self.get_starting_timestamp(context)
                 if start_date:
-                    start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    query = query + f" WHERE {self.replication_key} >= '{start_date}'"
+                    start_date = start_date.strftime("%Y-%m-%d %H:%M:%S.%f")
+                    query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
                     # for now support additional filters for incremental streams only
                     if self.where_filters:
                         query = query + f" AND {self.where_filters}"
@@ -462,7 +462,7 @@ class UnanetStream(Stream):
                 #Override oder_by key if present
                 if self.order_by_key:
                     order_by_key = self.order_by_key
-                query = query + f" ORDER BY {order_by_key}"
+                query = query + f" ORDER BY {order_by_key} ASC"
             offset = self.next_page_token(context)
             query = (
                 query + f" OFFSET {offset} ROWS FETCH NEXT {self.page_size} ROWS ONLY"
