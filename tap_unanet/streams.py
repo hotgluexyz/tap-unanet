@@ -106,7 +106,7 @@ class PersonsStream(UnanetStream):
     name = "persons "
     primary_keys = ["person_key"]
     table_name = "person"
-    replication_key = "last_updated_timestamp"
+    replication_key = "last_modified_timestamp"
     schema = th.PropertiesList(
         th.Property("person_key", th.IntegerType),
         th.Property("person_code", th.StringType),
