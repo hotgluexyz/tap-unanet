@@ -211,7 +211,7 @@ class PnLDetailStream(UnanetStream):
             # Ignore selected catalog map all properties
             # properties_list = self.schema['properties'].keys()
             properties_list = [
-                "gl_key"," feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","customer_code","customer_name","person_code","person_first_name","person_last_name"
+                "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","customer_code","customer_name","person_code","person_first_name","person_last_name"
             ]
             combined_dict = dict(zip(properties_list, row))
             return combined_dict
