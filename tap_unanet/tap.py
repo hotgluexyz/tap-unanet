@@ -11,7 +11,6 @@ from tap_unanet.streams import (
     AccountsStream,
     CustomersStream,
     PersonsStream,
-    PnLDetailStream,
 )
 from tap_unanet.client import UnanetConnector
 STREAM_TYPES = [
@@ -19,7 +18,6 @@ STREAM_TYPES = [
     AccountsStream,
     CustomersStream,
     PersonsStream,
-    PnLDetailStream,
 ]
 
 

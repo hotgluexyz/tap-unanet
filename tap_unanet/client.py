@@ -369,10 +369,6 @@ class UnanetStream(Stream):
     offset = 0
     page = 0
     total = None
-    query = None
-    query_total = None
-    where_filters = None
-    order_by_key = None
     
     @property
     def schema_name(self):
@@ -393,16 +389,12 @@ class UnanetStream(Stream):
     
     def get_total(self,context: Optional[dict] = None) -> Any:
         query = f"SELECT COUNT(*) AS total FROM {self.schema_name}.{self.table_name}"
-        if self.query_total:
-            query = self.query_total
         if self.replication_key:
             start_date = self.get_starting_timestamp(context)
             self.logger.info(f"get_total: context: {context}, stream: {self.name}, start_date: {start_date}")
             if start_date:
-                start_date = start_date.strftime("%Y-%m-%d %H:%M:%S.%f")
-                query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
-                if self.where_filters:
-                    query = query + f" AND {self.where_filters}"
+                start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                query = query + f" WHERE {self.replication_key} >= '{start_date}'"
         connection = self.get_connection()
         total =  list(connection._odbc_client.run_query(query))
         if len(total) > 0:
@@ -446,23 +438,14 @@ class UnanetStream(Stream):
         while not self.finished:
             selected_column_names = list(self.get_selected_schema()["properties"].keys())
             selected_column_names = ", ".join(selected_column_names)
-            if self.query:
-                query = self.query
-            else:    
-                query = f"SELECT {selected_column_names} FROM {self.schema_name}.{self.table_name}"
+            
+            query = f"SELECT {selected_column_names} FROM {self.schema_name}.{self.table_name}"
             if self.replication_key:
                 start_date = self.get_starting_timestamp(context)
                 if start_date:
-                    start_date = start_date.strftime("%Y-%m-%d %H:%M:%S.%f")
-                    query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
-                    # for now support additional filters for incremental streams only
-                    if self.where_filters:
-                        query = query + f" AND {self.where_filters}"
-                order_by_key = self.replication_key
-                #Override oder_by key if present
-                if self.order_by_key:
-                    order_by_key = self.order_by_key
-                query = query + f" ORDER BY {order_by_key} ASC"
+                    start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    query = query + f" WHERE {self.replication_key} >= '{start_date}'"
+                query = query + f" ORDER BY {self.replication_key}"
             offset = self.next_page_token(context)
             query = (
                 query + f" OFFSET {offset} ROWS FETCH NEXT {self.page_size} ROWS ONLY"
