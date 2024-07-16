@@ -190,7 +190,7 @@ class PnLDetailStream(UnanetStream):
         th.Property("local_currency", th.NumberType),
         th.Property("account_code", th.StringType),
         th.Property("account_key", th.IntegerType),
-        th.Property("account_type", th.NumberType),
+        th.Property("account_type", th.StringType),
         th.Property("customer_code", th.StringType),
         th.Property("customer_name", th.StringType),
         th.Property("person_code", th.StringType),
