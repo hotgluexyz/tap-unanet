@@ -218,6 +218,7 @@ class PnLDetailStream(UnanetStream):
             ]
             combined_dict = dict(zip(properties_list, row))
             # Calculate net amount
+            self.logger.info("Calculating totals for net amount...")
             if row.get("account_type") == "R":
                 combined_dict["net_amount"] = row.get("credit_amount") - row.get("debit_amount")
             elif row.get("account_type") == "E":
