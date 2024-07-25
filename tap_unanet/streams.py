@@ -217,12 +217,13 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","customer_code","customer_name","person_code","person_first_name","person_last_name"
             ]
             combined_dict = dict(zip(properties_list, row))
+            self.logger.info(f"Processed pnl row {combined_dict}")
             # Calculate net amount
             self.logger.info("Calculating totals for net amount...")
             if row.get("account_type") == "R":
-                combined_dict["net_amount"] = row.get("credit_amount") - row.get("debit_amount")
-            elif row.get("account_type") == "E":
-                combined_dict["net_amount"] = row.get("debit_amount") - row.get("credit_amount")
+                combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
+            elif combined_dict.get("account_type") == "E":
+                combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
             return combined_dict
         except Exception as e:
             self.logger.error(f"Error in post_process: {e}")
