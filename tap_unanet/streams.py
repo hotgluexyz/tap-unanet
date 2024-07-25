@@ -180,6 +180,7 @@ class PnLDetailStream(UnanetStream):
         th.Property("debit_amount", th.NumberType),
         th.Property("credit_amount", th.NumberType),
         th.Property("project_key", th.NumberType),
+        th.Property("project_name", th.StringType),
         th.Property("person_key", th.NumberType),
         th.Property("customer_key", th.NumberType),
         th.Property("local_debit_amount", th.NumberType),
@@ -189,6 +190,7 @@ class PnLDetailStream(UnanetStream):
         th.Property("transaction_currency", th.NumberType),
         th.Property("local_currency", th.NumberType),
         th.Property("account_code", th.StringType),
+        th.Property("account_name", th.StringType),
         th.Property("account_key", th.IntegerType),
         th.Property("account_type", th.StringType),
         th.Property("customer_code", th.StringType),
@@ -196,17 +198,18 @@ class PnLDetailStream(UnanetStream):
         th.Property("person_code", th.StringType),
         th.Property("person_first_name", th.StringType),
         th.Property("person_last_name", th.StringType),
+        th.Property("net_amount", th.NumberType),
     ).to_dict()
     
     @property
     def query(self):
-        return f"SELECT gl.general_ledger_key as gl_key, gl.feature,gl.post_date,gl.fiscal_month_key,gl.account_key,gl.organization_key,gl.document_number,gl.reference,gl.description,gl.transaction_date,gl.quantity,gl.debit_amount,gl.credit_amount,gl.project_key,gl.person_key,gl.customer_key,gl.local_debit_amount,gl.local_credit_amount,gl.instance_debit_amount,gl.instance_credit_amount,gl.transaction_currency,gl.local_currency,a.account_code,a.account_key,a.type as account_type,c.customer_code,c.customer_name,p.person_code,p.first_name as person_first_name,p.last_name as person_last_name FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key LEFT JOIN {self.schema_name}.person p ON gl.person_key = p.person_key"
+        return f"SELECT gl.general_ledger_key as gl_key, gl.feature,gl.post_date,gl.fiscal_month_key,gl.account_key,gl.organization_key,gl.document_number,gl.reference,gl.description,gl.transaction_date,gl.quantity,gl.debit_amount,gl.credit_amount,gl.project_key,gl.person_key,gl.customer_key,gl.local_debit_amount,gl.local_credit_amount,gl.instance_debit_amount,gl.instance_credit_amount,gl.transaction_currency,gl.local_currency,a.account_code,a.account_key,a.type as account_type,a.description as account_name,c.customer_code,c.customer_name,p.person_code,p.first_name as person_first_name,p.last_name as person_last_name,pr.title as project_name FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key LEFT JOIN {self.schema_name}.person p ON gl.person_key = p.person_key LEFT JOIN {self.schema_name}.project pr ON gl.project_key = p.project_key "
     
     @property
     def query_total(self):
         return f"SELECT COUNT(*) AS total FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key"
     
-    def post_process(self, row: dict, context: dict | None = None) -> dict | None:
+    def post_process(self, row, context):
         try:
             # Ignore selected catalog map all properties
             # properties_list = self.schema['properties'].keys()
@@ -214,6 +217,11 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","customer_code","customer_name","person_code","person_first_name","person_last_name"
             ]
             combined_dict = dict(zip(properties_list, row))
+            # Calculate net amount
+            if row.get("account_type") == "R":
+                combined_dict["net_amount"] = row.get("credit_amount") - row.get("debit_amount")
+            elif row.get("account_type") == "E":
+                combined_dict["net_amount"] = row.get("debit_amount") - row.get("credit_amount")
             return combined_dict
         except Exception as e:
             self.logger.error(f"Error in post_process: {e}")
