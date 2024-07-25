@@ -198,7 +198,6 @@ class PnLDetailStream(UnanetStream):
         th.Property("person_code", th.StringType),
         th.Property("person_first_name", th.StringType),
         th.Property("person_last_name", th.StringType),
-        th.Property("project_name", th.StringType),
         th.Property("net_amount", th.NumberType),
     ).to_dict()
     
