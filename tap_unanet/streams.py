@@ -203,7 +203,7 @@ class PnLDetailStream(UnanetStream):
     
     @property
     def query(self):
-        return f"SELECT gl.general_ledger_key as gl_key, gl.feature,gl.post_date,gl.fiscal_month_key,gl.account_key,gl.organization_key,gl.document_number,gl.reference,gl.description,gl.transaction_date,gl.quantity,gl.debit_amount,gl.credit_amount,gl.project_key,gl.person_key,gl.customer_key,gl.local_debit_amount,gl.local_credit_amount,gl.instance_debit_amount,gl.instance_credit_amount,gl.transaction_currency,gl.local_currency,a.account_code,a.account_key,a.type as account_type,a.description as account_name,c.customer_code,c.customer_name,p.person_code,p.first_name as person_first_name,p.last_name as person_last_name,pr.title as project_name FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key LEFT JOIN {self.schema_name}.person p ON gl.person_key = p.person_key LEFT JOIN {self.schema_name}.project pr ON gl.project_key = pr.project_key "
+        return f"SELECT gl.general_ledger_key as gl_key, gl.feature,gl.post_date,gl.fiscal_month_key,gl.account_key,gl.organization_key,gl.document_number,gl.reference,gl.description,gl.transaction_date,gl.quantity,gl.debit_amount,gl.credit_amount,gl.project_key,gl.person_key,gl.customer_key,gl.local_debit_amount,gl.local_credit_amount,gl.instance_debit_amount,gl.instance_credit_amount,gl.transaction_currency,gl.local_currency,a.account_code,a.account_key,a.type as account_type,a.description as account_name,c.customer_code,c.customer_name,p.person_code,p.first_name as person_first_name,p.last_name as person_last_name,pr.title as project_name FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key LEFT JOIN {self.schema_name}.customer c ON gl.organization_key = c.customer_key LEFT JOIN {self.schema_name}.person p ON gl.person_key = p.person_key LEFT JOIN {self.schema_name}.project pr ON gl.project_key = pr.project_key "
     
     @property
     def query_total(self):
@@ -217,13 +217,13 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","account_name","customer_code","customer_name","person_code","person_first_name","person_last_name","project_name"
             ]
             combined_dict = dict(zip(properties_list, row))
-            self.logger.info(f"Processed pnl row {combined_dict}")
             # Calculate net amount
             self.logger.info("Calculating totals for net amount...")
             if combined_dict.get("account_type") == "R":
                 combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
             elif combined_dict.get("account_type") == "E":
                 combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
+            self.logger.info(f"Processed pnl row {combined_dict}")
             return combined_dict
         except Exception as e:
             self.logger.error(f"Error in post_process: {e}")
