@@ -95,8 +95,6 @@ class OdbcClient(metaclass=Singleton):
             self.logger.error(f"Error in run_query_yield: {e}")
 
     def get_schema_names(self) -> List[str]:
-        schemas = self.run_query_yield("SELECT name FROM sys.schemas")
-        self.logger.info(f"AVAILABLE SCHEMAS {schemas}")
         return [
             schema_name
             for (schema_name,) in self.run_query_yield("SELECT name FROM sys.schemas")
