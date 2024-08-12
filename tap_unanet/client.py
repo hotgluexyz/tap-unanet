@@ -391,41 +391,6 @@ class UnanetStream(Stream):
         else:
             self.logger.info(f"Setting finished: {self.finished}, stream: {self.name}")
 
-
-    # def next_page_token(self,context: Optional[dict] = None) -> Any:
-    #     if self.total is None:
-    #         self.total = self.get_total(context)
-    #     offset = self.page_size * self.page
-    #     self.logger.info(f"next_page_token: {offset}, {self.total}, {self.page}, finished: {self.finished}")
-    #     self.page += 1
-    #     self.offset = offset
-    #     # self.logger.info(f"offset condition: {(offset >= int(self.total))}")
-    #     if offset >= int(self.total):
-    #         self.finished = True
-    #         self.logger.info(f"Setting finished: {self.finished}, stream: {self.name}")
-    #     return self.offset
-    
-    # def get_total(self,context: Optional[dict] = None) -> Any:
-    #     query = f"SELECT COUNT(*) AS total FROM {self.schema_name}.{self.table_name}"
-    #     if self.query_total:
-    #         query = self.query_total
-    #     if self.replication_key:
-    #         start_date = self.get_starting_timestamp(context)
-    #         self.logger.info(f"get_total: context: {context}, stream: {self.name}, start_date: {start_date}")
-    #         if start_date:
-    #             start_date = start_date.strftime("%Y-%m-%d %H:%M:%S.%f")
-    #             query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
-    #             if self.where_filters:
-    #                 query = query + f" AND {self.where_filters}"
-    #     connection = self.get_connection()
-    #     total =  list(connection._odbc_client.run_query(query))
-    #     if len(total) > 0:
-    #         self.total = total[0][0]
-    #     else:
-    #         self.total = 0    
-    #     self.logger.info(f"{self.name} total: {self.total}")
-    #     return self.total
-
     def get_connection(self):
         if not self.conn:
             self.conn = UnanetConnector(self)
