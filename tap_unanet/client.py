@@ -381,7 +381,7 @@ class UnanetStream(Stream):
         return self.config.get('schema_name')
     
     def next_page_token(
-        self, response: requests.Response, previous_token: Optional[Any]
+        self, context
     ) -> Any:
         if self.paginate:
             offset = self.page_size * self.page
