@@ -380,7 +380,7 @@ class UnanetStream(Stream):
     def schema_name(self):
         return self.config.get('schema_name')
     
-    def get_next_page_token(
+    def next_page_token(
         self, response: requests.Response, previous_token: Optional[Any]
     ) -> Any:
         if self.paginate:
