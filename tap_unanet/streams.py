@@ -166,7 +166,7 @@ class PnLDetailStream(UnanetStream):
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    # where_filters = "a.type IN ('R', 'E')"
+    where_filters = "a.type = 'R' OR a.type = 'E'"
     order_by_key = "gl.post_date"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
@@ -241,3 +241,113 @@ class PnLDetailStream(UnanetStream):
             print(f"Error in post_process: {row}")
             return None
 
+
+class ProjectsStream(UnanetStream):
+    """Define custom stream."""
+    name = "projects"
+    table_name = "project"
+    primary_keys = ["project_key"]
+    replication_key = "created"
+    
+    schema = th.PropertiesList(
+        th.Property("project_key", th.NumberType),
+        th.Property("customer_key", th.NumberType),
+        th.Property("owning_customer_key", th.NumberType),
+        th.Property("project_code", th.StringType),
+        th.Property("account_number", th.StringType),
+        th.Property("title", th.StringType),
+        th.Property("purpose", th.StringType),
+        th.Property("manager_approval", th.StringType),
+        th.Property("expense_manager_approval", th.StringType),
+        th.Property("pay_code_key", th.NumberType),
+        th.Property("project_type_key", th.NumberType),
+        th.Property("project_status_key", th.NumberType),
+        th.Property("billing_type_key", th.NumberType),
+        th.Property("posting_group_key", th.NumberType),
+        th.Property("cost_struct_key", th.NumberType),
+        th.Property("orig_start_date", th.DateTimeType),
+        th.Property("orig_end_date", th.DateTimeType),
+        th.Property("rev_start_date", th.DateTimeType),
+        th.Property("rev_end_date", th.DateTimeType),
+        th.Property("completed_date", th.DateTimeType),
+        th.Property("total_value", th.NumberType),
+        th.Property("funded_value", th.NumberType),
+        th.Property("hours_budget", th.NumberType),
+        th.Property("hours_etc", th.NumberType),
+        th.Property("hours_est_tot", th.NumberType),
+        th.Property("exp_bill_budget", th.NumberType),
+        th.Property("exp_cost_budget", th.NumberType),
+        th.Property("exp_cost_burden_budget", th.NumberType),
+        th.Property("exp_bill_etc", th.NumberType),
+        th.Property("exp_cost_etc", th.NumberType),
+        th.Property("exp_bill_est_tot", th.NumberType),
+        th.Property("exp_cost_est_tot", th.NumberType),
+        th.Property("labor_bill_budget", th.NumberType),
+        th.Property("labor_cost_budget", th.NumberType),
+        th.Property("labor_cost_burden_budget", th.NumberType),
+        th.Property("labor_bill_etc", th.NumberType),
+        th.Property("labor_cost_etc", th.NumberType),
+        th.Property("labor_bill_est_tot", th.NumberType),
+        th.Property("labor_cost_est_tot", th.NumberType),
+        th.Property("assignment_flag", th.StringType),
+        th.Property("expense_assignment_flag", th.StringType),
+        th.Property("time_assignment_flag", th.StringType),
+        th.Property("task_level_assignment", th.StringType),
+        th.Property("allow_self_plan", th.StringType),
+        th.Property("self_assign_plans", th.StringType),
+        th.Property("er_task_required", th.StringType),
+        th.Property("ts_task_required", th.StringType),
+        th.Property("future_charge", th.StringType),
+        th.Property("tito_required", th.StringType),
+        th.Property("created", th.DateTimeType),
+        th.Property("task_level_assignment", th.StringType),
+        th.Property("probability_percent", th.NumberType),
+        th.Property("percent_complete", th.NumberType),
+        th.Property("bill_rate_source", th.StringType),
+        th.Property("cost_rate_source", th.StringType),
+        th.Property("use_labor_category", th.StringType),
+        th.Property("enforce_wbs_dates", th.StringType),
+        th.Property("leave_balance", th.StringType),
+        th.Property("customer_approves_first", th.StringType),
+        th.Property("customer_time_approval", th.StringType),
+        th.Property("customer_expense_approval", th.StringType),
+        th.Property("pct_complete_rule", th.StringType),
+        th.Property("project_color", th.StringType),
+        th.Property("viewer_open", th.StringType),
+        th.Property("pm_open", th.StringType),
+        th.Property("rm_open", th.StringType),
+        th.Property("resource_requestor_open", th.StringType),
+        th.Property("resource_assigner_open", th.StringType),
+        th.Property("billing_manager_open", th.StringType),
+        th.Property("billing_viewer_open", th.StringType),
+        th.Property("proj_require_time_comments", th.StringType),
+        th.Property("location_required", th.StringType),
+        th.Property("location_key", th.NumberType),
+        th.Property("limit_bill_to_funded", th.StringType),
+        th.Property("limit_rev_to_funded", th.StringType),
+        th.Property("user01", th.StringType),
+        th.Property("user02", th.StringType),
+        th.Property("user03", th.StringType),
+        th.Property("user04", th.StringType),
+        th.Property("user05", th.StringType),
+        th.Property("user06", th.StringType),
+        th.Property("user07", th.StringType),
+        th.Property("user08", th.StringType),
+        th.Property("user09", th.StringType),
+        th.Property("user10", th.StringType),
+    ).to_dict()
+
+
+class AccountHierarchyStream(UnanetStream):
+    """Define custom stream."""
+    name = "account_hierarchy"
+    table_name = "acct_fin_tree"
+    primary_keys = ["node_key"]
+    
+    schema = th.PropertiesList(
+        th.Property("node_key", th.NumberType),
+        th.Property("parent_key", th.NumberType),
+        th.Property("tree_level", th.IntegerType),
+        th.Property("left_visit", th.IntegerType),
+        th.Property("right_visit", th.IntegerType),
+    ).to_dict()

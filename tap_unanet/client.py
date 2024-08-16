@@ -434,7 +434,7 @@ class UnanetStream(Stream):
                     query = query + f" WHERE {self.replication_key} > TIMESTAMP '{start_date}'"
                     # for now support additional filters for incremental streams only
                     if self.where_filters:
-                        query = query + f" AND {self.where_filters}"
+                        query = query + f" AND ({self.where_filters})"
                 order_by_key = self.replication_key
                 #Override oder_by key if present
                 if self.order_by_key:
