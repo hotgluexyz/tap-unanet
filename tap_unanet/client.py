@@ -389,7 +389,7 @@ class UnanetStream(Stream):
             self.offset = offset
             return self.offset
         else:
-            self.logger.info(f"Setting finished: {self.finished}, stream: {self.name}")
+            self.logger.info(f"Setting paginate: {self.paginate}, stream: {self.name}")
 
     def get_connection(self):
         if not self.conn:
