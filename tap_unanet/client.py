@@ -449,6 +449,7 @@ class UnanetStream(Stream):
             records = list(connection._odbc_client.run_query_yield(query))
             if not len(records):
                 self.paginate = False
+                self.logger.info(f"Set paginate: {self.paginate} stream {self.name}")
             yield from records
 
     def get_records(self, context: dict | None) -> Iterable[dict]:
