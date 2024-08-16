@@ -39,8 +39,6 @@ class GeneralLedgerStream(UnanetStream):
         th.Property("instance_credit_amount", th.NumberType),
         th.Property("transaction_currency", th.NumberType),
         th.Property("local_currency", th.NumberType),
-        
-        
     ).to_dict()
 
 
@@ -62,6 +60,8 @@ class AccountsStream(UnanetStream):
         th.Property("hide_income_stmt_hdr", th.StringType),
         th.Property("category_1099", th.StringType),
     ).to_dict()
+
+
 class CustomersStream(UnanetStream):
     name = "customers"
     primary_keys = ["customer_key"]
@@ -102,6 +102,8 @@ class CustomersStream(UnanetStream):
         th.Property("currency_code_key", th.IntegerType),
         th.Property("default_person_org_flag", th.StringType),
     ).to_dict()
+
+
 class PersonsStream(UnanetStream):
     name = "persons "
     primary_keys = ["person_key"]
@@ -158,12 +160,13 @@ class PersonsStream(UnanetStream):
         th.Property("default_legal_entity_key", th.IntegerType),
     ).to_dict()
     
+
 class PnLDetailStream(UnanetStream):
     name = "pnl_detail"
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    where_filters = "a.type IN ('R', 'E')"
+    # where_filters = "a.type IN ('R', 'E')"
     order_by_key = "gl.post_date"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
