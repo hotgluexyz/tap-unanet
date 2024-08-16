@@ -166,7 +166,6 @@ class PnLDetailStream(UnanetStream):
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    where_filters = "a.type = 'R' OR a.type = 'E'"
     order_by_key = "gl.post_date"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
@@ -228,6 +227,8 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","account_name","organization_code","customer_code","organization_name","customer_name","organization_type_key","customer_type_key","organization_type","customer_type","person_code","person_first_name","person_last_name","project_name"
             ]
             combined_dict = dict(zip(properties_list, row))
+            if row.get("account_type") not in ["R", "E"]:
+                return {}
             # Calculate net amount
             self.logger.info("Calculating totals for net amount...")
             if combined_dict.get("account_type") == "R":
