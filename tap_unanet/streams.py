@@ -228,7 +228,7 @@ class PnLDetailStream(UnanetStream):
             ]
             combined_dict = dict(zip(properties_list, row))
             if combined_dict.get("account_type") not in ["R", "E"]:
-                return {}
+                return
             # Calculate net amount
             self.logger.info("Calculating totals for net amount...")
             if combined_dict.get("account_type") == "R":
