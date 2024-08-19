@@ -356,18 +356,3 @@ class ProjectsStream(UnanetStream):
         th.Property("user19", th.StringType),
         th.Property("user20", th.StringType),
     ).to_dict()
-
-
-class AccountHierarchyStream(UnanetStream):
-    """Define custom stream."""
-    name = "account_hierarchy"
-    table_name = "acct_fin_tree"
-    primary_keys = ["node_key"]
-    
-    schema = th.PropertiesList(
-        th.Property("node_key", th.NumberType),
-        th.Property("parent_key", th.NumberType),
-        th.Property("tree_level", th.IntegerType),
-        th.Property("left_visit", th.IntegerType),
-        th.Property("right_visit", th.IntegerType),
-    ).to_dict()

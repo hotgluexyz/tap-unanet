@@ -11,7 +11,6 @@ from tap_unanet.streams import (
     PersonsStream,
     PnLDetailStream,
     ProjectsStream,
-    AccountHierarchyStream
 )
 STREAM_TYPES = [
     GeneralLedgerStream,
@@ -20,7 +19,6 @@ STREAM_TYPES = [
     PersonsStream,
     PnLDetailStream,
     ProjectsStream,
-    AccountHierarchyStream
 ]
 
 
