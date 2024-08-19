@@ -247,7 +247,6 @@ class ProjectsStream(UnanetStream):
     name = "projects"
     table_name = "project"
     primary_keys = ["project_key"]
-    replication_key = "created"
     
     schema = th.PropertiesList(
         th.Property("project_key", th.NumberType),
