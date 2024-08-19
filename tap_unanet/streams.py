@@ -326,7 +326,7 @@ class ProjectsStream(UnanetStream):
         th.Property("exp_sub_po_required", th.StringType),
         th.Property("item_assignment_flag", th.StringType),
         th.Property("item_task_required", th.StringType),
-        th.Property("pm_approves_before_mgr", th.NumberType),
+        th.Property("pm_approves_before_mgr", th.StringType),
         th.Property("user11", th.StringType),
         th.Property("user12", th.StringType),
         th.Property("user13", th.StringType),
