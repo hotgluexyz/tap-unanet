@@ -342,22 +342,18 @@ class ProjectsStream(UnanetStream):
 class AccountHierarchyStream(UnanetStream):
     """Define custom stream."""
     name = "account_hierarchy"
-    table_name = "acct_org_access_hierarchy"
-    primary_keys = ["account_key"]
+    table_name = "customer_account"
+    primary_keys = ["customer_key", "category"]
     
     schema = th.PropertiesList(
         th.Property("account_key", th.NumberType),
         th.Property("customer_key", th.NumberType),
-        th.Property("customer_name", th.IntegerType),
-        th.Property("customer_code", th.IntegerType),
-        th.Property("account_number", th.IntegerType),
-        th.Property("classification", th.IntegerType),
-
+        th.Property("category", th.IntegerType),
     ).to_dict()
 
-    @property
-    def query(self):
-        return f"SELECT gl.account_key,gl.customer_key,c.customer_name,c.customer_code,c.account_number,c.classification FROM {self.schema_name}.{self.table_name} gl LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key"
+    # @property
+    # def query(self):
+    #     return f"SELECT gl.account_key,gl.customer_key,c.customer_name,c.customer_code,c.account_number,c.classification FROM {self.schema_name}.{self.table_name} gl LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key"
     
     
     # def post_process(self, row, context):
