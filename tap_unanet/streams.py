@@ -66,14 +66,14 @@ class AccountsStream(UnanetStream):
 
     @property
     def query(self):
-        query = f"SELECT a.account_key,a.account_code,a.description,a.type,a.active,a.entry_allowed,a.begin_date,a.end_date,a.project_required,a.hide_income_stmt_hdr,a.category_1099,h.node_key,h.parent_key as parent_key,pa.account_key as _parent_key,pa.account_code as parent_code,pa.description as parent_name FROM {self.schema_name}.{self.table_name} a LEFT JOIN {self.schema_name}.acct_fin_tree h ON a.account_key = h.node_key LEFT JOIN {self.schema_name}.account pa ON h.parent_key = pa.account_key"
+        query = f"SELECT a.account_key,a.account_code,a.description,a.type,a.active,a.entry_allowed,a.begin_date,a.end_date,a.project_required,a.hide_income_stmt_hdr,a.category_1099,h.node_key,h.parent_key as parent_key,pa.account_key as account_parent_key,pa.account_code as parent_code,pa.description as parent_name FROM {self.schema_name}.{self.table_name} a LEFT JOIN {self.schema_name}.acct_fin_tree h ON a.account_key = h.node_key LEFT JOIN {self.schema_name}.account pa ON h.parent_key = pa.account_key"
         return query
     
     def post_process(self, row, context):
         try:
             # Ignore selected catalog map all properties
             properties_list = [
-                "account_key","account_code","description","type","active","entry_allowed","begin_date","end_date","project_required","hide_income_stmt_hdr","category_1099","node_key","parent_key","_parent_key","parent_code","parent_name"
+                "account_key","account_code","description","type","active","entry_allowed","begin_date","end_date","project_required","hide_income_stmt_hdr","category_1099","node_key","parent_key","account_parent_key","parent_code","parent_name"
             ]
             combined_dict = dict(zip(properties_list, row))
             return combined_dict
