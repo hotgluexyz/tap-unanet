@@ -39,8 +39,6 @@ class GeneralLedgerStream(UnanetStream):
         th.Property("instance_credit_amount", th.NumberType),
         th.Property("transaction_currency", th.NumberType),
         th.Property("local_currency", th.NumberType),
-        
-        
     ).to_dict()
 
 
@@ -61,7 +59,28 @@ class AccountsStream(UnanetStream):
         th.Property("project_required", th.StringType),
         th.Property("hide_income_stmt_hdr", th.StringType),
         th.Property("category_1099", th.StringType),
+        th.Property("parent_key", th.NumberType),
+        th.Property("parent_code", th.StringType),
+        th.Property("parent_name", th.StringType),
     ).to_dict()
+
+    @property
+    def query(self):
+        query = f"SELECT a.account_key,a.account_code,a.description,a.type,a.active,a.entry_allowed,a.begin_date,a.end_date,a.project_required,a.hide_income_stmt_hdr,a.category_1099,h.node_key,h.parent_key as parent_key,pa.account_key as account_parent_key,pa.account_code as parent_code,pa.description as parent_name FROM {self.schema_name}.{self.table_name} a LEFT JOIN {self.schema_name}.acct_fin_tree h ON a.account_key = h.node_key LEFT JOIN {self.schema_name}.account pa ON h.parent_key = pa.account_key"
+        return query
+    
+    def post_process(self, row, context):
+        try:
+            # Ignore selected catalog map all properties
+            properties_list = [
+                "account_key","account_code","description","type","active","entry_allowed","begin_date","end_date","project_required","hide_income_stmt_hdr","category_1099","node_key","parent_key","account_parent_key","parent_code","parent_name"
+            ]
+            combined_dict = dict(zip(properties_list, row))
+            return combined_dict
+        except Exception as e:
+            self.logger.error(f"Error in post_process: {e} in row {row}")
+            return None
+
 class CustomersStream(UnanetStream):
     name = "customers"
     primary_keys = ["customer_key"]
@@ -102,6 +121,8 @@ class CustomersStream(UnanetStream):
         th.Property("currency_code_key", th.IntegerType),
         th.Property("default_person_org_flag", th.StringType),
     ).to_dict()
+
+
 class PersonsStream(UnanetStream):
     name = "persons "
     primary_keys = ["person_key"]
@@ -158,12 +179,12 @@ class PersonsStream(UnanetStream):
         th.Property("default_legal_entity_key", th.IntegerType),
     ).to_dict()
     
+
 class PnLDetailStream(UnanetStream):
     name = "pnl_detail"
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    where_filters = "a.type IN ('R', 'E')"
     order_by_key = "gl.post_date"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
@@ -225,16 +246,113 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","account_name","organization_code","customer_code","organization_name","customer_name","organization_type_key","customer_type_key","organization_type","customer_type","person_code","person_first_name","person_last_name","project_name"
             ]
             combined_dict = dict(zip(properties_list, row))
-            # Calculate net amount
-            self.logger.info("Calculating totals for net amount...")
-            if combined_dict.get("account_type") == "R":
-                combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
-            elif combined_dict.get("account_type") == "E":
-                combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
-            self.logger.info(f"Processed pnl row {combined_dict}")
-            return combined_dict
+            if combined_dict.get("account_type") in ["R", "E"]:
+                # Calculate net amount
+                self.logger.info("Calculating totals for net amount...")
+                if combined_dict.get("account_type") == "R":
+                    combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
+                elif combined_dict.get("account_type") == "E":
+                    combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
+                self.logger.info(f"Processed pnl row {combined_dict}")
+                return combined_dict
         except Exception as e:
-            self.logger.error(f"Error in post_process: {e}")
-            print(f"Error in post_process: {row}")
+            self.logger.error(f"Error in post_process: {e} in row {row}")
             return None
 
+
+class ProjectsStream(UnanetStream):
+    """Define custom stream."""
+    name = "projects"
+    table_name = "project"
+    primary_keys = ["project_key"]
+    
+    schema = th.PropertiesList(
+        th.Property("project_key", th.NumberType),
+        th.Property("customer_key", th.NumberType),
+        th.Property("owning_customer_key", th.NumberType),
+        th.Property("project_code", th.StringType),
+        th.Property("account_number", th.StringType),
+        th.Property("title", th.StringType),
+        th.Property("purpose", th.StringType),
+        th.Property("pay_code_key", th.NumberType),
+        th.Property("project_type_key", th.NumberType),
+        th.Property("project_status_key", th.NumberType),
+        th.Property("billing_type_key", th.NumberType),
+        th.Property("posting_group_key", th.NumberType),
+        th.Property("cost_struct_key", th.NumberType),
+        th.Property("orig_start_date", th.DateTimeType),
+        th.Property("orig_end_date", th.DateTimeType),
+        th.Property("rev_start_date", th.DateTimeType),
+        th.Property("rev_end_date", th.DateTimeType),
+        th.Property("completed_date", th.DateTimeType),
+        th.Property("total_value", th.NumberType),
+        th.Property("funded_value", th.NumberType),
+        th.Property("hours_budget", th.NumberType),
+        th.Property("hours_etc", th.NumberType),
+        th.Property("hours_est_tot", th.NumberType),
+        th.Property("exp_bill_budget", th.NumberType),
+        th.Property("exp_cost_budget", th.NumberType),
+        th.Property("exp_cost_burden_budget", th.NumberType),
+        th.Property("exp_bill_etc", th.NumberType),
+        th.Property("exp_cost_etc", th.NumberType),
+        th.Property("exp_bill_est_tot", th.NumberType),
+        th.Property("exp_cost_est_tot", th.NumberType),
+        th.Property("labor_bill_budget", th.NumberType),
+        th.Property("labor_cost_budget", th.NumberType),
+        th.Property("labor_cost_burden_budget", th.NumberType),
+        th.Property("labor_bill_etc", th.NumberType),
+        th.Property("labor_cost_etc", th.NumberType),
+        th.Property("labor_bill_est_tot", th.NumberType),
+        th.Property("labor_cost_est_tot", th.NumberType),
+        th.Property("assignment_flag", th.StringType),
+        th.Property("expense_assignment_flag", th.StringType),
+        th.Property("time_assignment_flag", th.StringType),
+        th.Property("task_level_assignment", th.StringType),
+        th.Property("allow_self_plan", th.StringType),
+        th.Property("self_assign_plans", th.StringType),
+        th.Property("er_task_required", th.StringType),
+        th.Property("ts_task_required", th.StringType),
+        th.Property("future_charge", th.StringType),
+        th.Property("tito_required", th.StringType),
+        th.Property("created", th.DateTimeType),
+        th.Property("probability_percent", th.NumberType),
+        th.Property("percent_complete", th.NumberType),
+        th.Property("bill_rate_source", th.StringType),
+        th.Property("cost_rate_source", th.StringType),
+        th.Property("use_labor_category", th.StringType),
+        th.Property("enforce_wbs_dates", th.StringType),
+        th.Property("leave_balance", th.StringType),
+        th.Property("customer_approves_first", th.StringType),
+        th.Property("pct_complete_rule", th.StringType),
+        th.Property("project_color", th.StringType),
+        th.Property("proj_require_time_comments", th.StringType),
+        th.Property("location_required", th.StringType),
+        th.Property("location_key", th.NumberType),
+        th.Property("limit_bill_to_funded", th.StringType),
+        th.Property("limit_rev_to_funded", th.StringType),
+        th.Property("user01", th.StringType),
+        th.Property("user02", th.StringType),
+        th.Property("user03", th.StringType),
+        th.Property("user04", th.StringType),
+        th.Property("user05", th.StringType),
+        th.Property("user06", th.StringType),
+        th.Property("user07", th.StringType),
+        th.Property("user08", th.StringType),
+        th.Property("user09", th.StringType),
+        th.Property("user10", th.StringType),
+        th.Property("ts_sub_po_required", th.StringType),
+        th.Property("exp_sub_po_required", th.StringType),
+        th.Property("item_assignment_flag", th.StringType),
+        th.Property("item_task_required", th.StringType),
+        th.Property("pm_approves_before_mgr", th.StringType),
+        th.Property("user11", th.StringType),
+        th.Property("user12", th.StringType),
+        th.Property("user13", th.StringType),
+        th.Property("user14", th.StringType),
+        th.Property("user15", th.StringType),
+        th.Property("user16", th.StringType),
+        th.Property("user17", th.StringType),
+        th.Property("user18", th.StringType),
+        th.Property("user19", th.StringType),
+        th.Property("user20", th.StringType),
+    ).to_dict()

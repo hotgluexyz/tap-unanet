@@ -3,23 +3,22 @@
 from typing import List
 
 from singer_sdk import Tap, Stream
-from singer_sdk import typing as th  # JSON schema typing helpers
-# TODO: Import your custom stream types here:
+from singer_sdk import typing as th  
 from tap_unanet.streams import (
-    UnanetStream,
     GeneralLedgerStream,
     AccountsStream,
     CustomersStream,
     PersonsStream,
     PnLDetailStream,
+    ProjectsStream,
 )
-from tap_unanet.client import UnanetConnector
 STREAM_TYPES = [
     GeneralLedgerStream,
     AccountsStream,
     CustomersStream,
     PersonsStream,
     PnLDetailStream,
+    ProjectsStream,
 ]
 
 
@@ -27,7 +26,6 @@ class TapUnanet(Tap):
     """Unanet tap class."""
     name = "tap-unanet"
 
-    # TODO: Update this section with the actual config values you expect:
     config_jsonschema = th.PropertiesList(
         th.Property(
             "server",
