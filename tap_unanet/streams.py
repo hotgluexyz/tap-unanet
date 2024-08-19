@@ -59,8 +59,27 @@ class AccountsStream(UnanetStream):
         th.Property("project_required", th.StringType),
         th.Property("hide_income_stmt_hdr", th.StringType),
         th.Property("category_1099", th.StringType),
+        th.Property("parent_key", th.NumberType),
+        th.Property("parent_code", th.StringType),
+        th.Property("parent_name", th.StringType),
     ).to_dict()
 
+    @property
+    def query(self):
+        query = f"SELECT a.account_key,a.account_code,a.description,a.type,a.active,a.entry_allowed,a,begin_date,a.end_date,a.project_required,a.hide_income_stmt_hdr,a.category_1099,h.node_key,h.parent_key as parent_key,pa.account_key,pa.account_code as parent_code,pa.description as parent_name FROM {self.schema_name}.{self.table_name} a LEFT JOIN {self.schema_name}.acct_fin_tree h ON a.account_key = h.node_key LEFT JOIN {self.schema_name}.account pa ON h.parent_key = pa.account_key"
+        return query
+    
+    def post_process(self, row, context):
+        try:
+            # Ignore selected catalog map all properties
+            properties_list = [
+                "account_key","account_code","description","type","active","entry_allowed","begin_date","end_date","project_required","hide_income_stmt_hdr","category_1099","node_key","parent_key","account_key","parent_code","parent_name"
+            ]
+            combined_dict = dict(zip(properties_list, row))
+            return combined_dict
+        except Exception as e:
+            self.logger.error(f"Error in post_process: {e} in row {row}")
+            return None
 
 class CustomersStream(UnanetStream):
     name = "customers"
@@ -342,25 +361,13 @@ class ProjectsStream(UnanetStream):
 class AccountHierarchyStream(UnanetStream):
     """Define custom stream."""
     name = "account_hierarchy"
-    table_name = "customer_account"
-    primary_keys = ["customer_key", "category"]
+    table_name = "acct_fin_tree"
+    primary_keys = ["node_key"]
     
     schema = th.PropertiesList(
-        th.Property("account_key", th.NumberType),
-        th.Property("customer_key", th.NumberType),
-        th.Property("category", th.IntegerType),
+        th.Property("node_key", th.NumberType),
+        th.Property("parent_key", th.NumberType),
+        th.Property("tree_level", th.IntegerType),
+        th.Property("left_visit", th.IntegerType),
+        th.Property("right_visit", th.IntegerType),
     ).to_dict()
-
-    # @property
-    # def query(self):
-    #     return f"SELECT gl.account_key,gl.customer_key,c.customer_name,c.customer_code,c.account_number,c.classification FROM {self.schema_name}.{self.table_name} gl LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key"
-    
-    
-    # def post_process(self, row, context):
-    #     try:
-    #         properties_list = list(self.schema['properties'].keys())
-    #         combined_dict = dict(zip(properties_list, row))
-    #         return combined_dict
-    #     except Exception as e:
-    #         self.logger.error(f"Error in post_process: {e} in row {row}")
-    #         return None
