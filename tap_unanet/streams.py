@@ -237,8 +237,7 @@ class PnLDetailStream(UnanetStream):
                 self.logger.info(f"Processed pnl row {combined_dict}")
                 return combined_dict
         except Exception as e:
-            self.logger.error(f"Error in post_process: {e}")
-            print(f"Error in post_process: {row}")
+            self.logger.error(f"Error in post_process: {e} in row {row}")
             return None
 
 
@@ -343,13 +342,29 @@ class ProjectsStream(UnanetStream):
 class AccountHierarchyStream(UnanetStream):
     """Define custom stream."""
     name = "account_hierarchy"
-    table_name = "acct_fin_tree"
-    primary_keys = ["node_key"]
+    table_name = "acct_org_access_hierarchy"
+    primary_keys = ["account_key"]
     
     schema = th.PropertiesList(
-        th.Property("node_key", th.NumberType),
-        th.Property("parent_key", th.NumberType),
-        th.Property("tree_level", th.IntegerType),
-        th.Property("left_visit", th.IntegerType),
-        th.Property("right_visit", th.IntegerType),
+        th.Property("account_key", th.NumberType),
+        th.Property("customer_key", th.NumberType),
+        th.Property("customer_name", th.IntegerType),
+        th.Property("customer_code", th.IntegerType),
+        th.Property("account_number", th.IntegerType),
+        th.Property("classification", th.IntegerType),
+
     ).to_dict()
+
+    @property
+    def query(self):
+        return f"SELECT gl.account_key,gl.customer_key,c.customer_name,c.customer_code,c.account_number,c.classification FROM {self.schema_name}.{self.table_name} gl LEFT JOIN {self.schema_name}.customer c ON gl.customer_key = c.customer_key"
+    
+    
+    # def post_process(self, row, context):
+    #     try:
+    #         properties_list = list(self.schema['properties'].keys())
+    #         combined_dict = dict(zip(properties_list, row))
+    #         return combined_dict
+    #     except Exception as e:
+    #         self.logger.error(f"Error in post_process: {e} in row {row}")
+    #         return None
