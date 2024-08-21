@@ -185,7 +185,7 @@ class PnLDetailStream(UnanetStream):
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    order_by_key = "gl.post_date"
+    order_by_key = "gl.general_ledger_key"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
         th.Property("feature", th.NumberType),
@@ -233,10 +233,6 @@ class PnLDetailStream(UnanetStream):
         return f"SELECT gl.general_ledger_key as gl_key, gl.feature,gl.post_date,gl.fiscal_month_key,gl.account_key,gl.organization_key,gl.document_number,gl.reference,gl.description,gl.transaction_date,gl.quantity,gl.debit_amount,gl.credit_amount,gl.project_key,gl.person_key,gl.customer_key,gl.local_debit_amount,gl.local_credit_amount,gl.instance_debit_amount,gl.instance_credit_amount,gl.transaction_currency,gl.local_currency,a.account_code,a.account_key,a.type as account_type,a.description as account_name,c.customer_code as organization_code, c_.customer_code as customer_code,c.customer_name as organization_name, c_.customer_name as customer_name,c.customer_type_key as organization_type_key,c_.customer_type_key as customer_type_key,org_ct.customer_type as organization_type,ct.customer_type as customer_type,p.person_code,p.first_name as person_first_name,p.last_name as person_last_name,pr.title as project_name FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key LEFT JOIN {self.schema_name}.customer c ON gl.organization_key = c.customer_key LEFT JOIN {self.schema_name}.customer c_ ON gl.customer_key = c_.customer_key LEFT JOIN {self.schema_name}.customer_type org_ct ON c.customer_type_key = org_ct.customer_type_key LEFT JOIN {self.schema_name}.customer_type ct ON c_.customer_type_key = ct.customer_type_key LEFT JOIN {self.schema_name}.person p ON gl.person_key = p.person_key LEFT JOIN {self.schema_name}.project pr ON gl.project_key = pr.project_key "
     # customer can represent many entities, here both customer_key and organization_key make reference to the same table
     # that's why there are 2 joins on the same table ticket: HGI-6156
-    
-    @property
-    def query_total(self):
-        return f"SELECT COUNT(*) AS total FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key"
     
     def post_process(self, row, context):
         try:
