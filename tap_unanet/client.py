@@ -446,7 +446,7 @@ class UnanetStream(Stream):
                 order_queries = []
                 for order_key in order_keys:
                     order_queries.append(f"{order_key} ASC")
-                order_query = f" ORDER BY {', '.join(order_queries)} ASC"
+                order_query = f" ORDER BY {', '.join(order_queries)}"
                 query = query + order_query
             offset = self.next_page_token(context)
             query = (
