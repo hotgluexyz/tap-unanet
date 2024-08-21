@@ -435,11 +435,19 @@ class UnanetStream(Stream):
                     # for now support additional filters for incremental streams only
                     if self.where_filters:
                         query = query + f" AND ({self.where_filters})"
-                order_by_key = self.replication_key
                 #Override oder_by key if present
                 if self.order_by_key:
-                    order_by_key = self.order_by_key
-                query = query + f" ORDER BY {order_by_key} ASC"
+                    order_keys = self.order_by_key
+                    if isinstance(order_keys, str):
+                        order_keys = [order_keys]
+                else:
+                    order_keys = self.primary_keys + [self.replication_key]
+                #Add order query 
+                order_queries = []
+                for order_key in order_keys:
+                    order_queries.append(f"{order_key} ASC")
+                order_query = f" ORDER BY {', '.join(order_queries)} ASC"
+                query = query + order_query
             offset = self.next_page_token(context)
             query = (
                 query + f" OFFSET {offset} ROWS FETCH NEXT {self.page_size} ROWS ONLY"

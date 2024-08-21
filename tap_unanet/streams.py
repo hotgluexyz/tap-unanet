@@ -185,7 +185,8 @@ class PnLDetailStream(UnanetStream):
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    order_by_key = "gl.general_ledger_key"
+    order_by_key = ["gl.general_ledger_key", "gl.post_date"]
+    where_filters = "a.type IN ('R', 'E')"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
         th.Property("feature", th.NumberType),
