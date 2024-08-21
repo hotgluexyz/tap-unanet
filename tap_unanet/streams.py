@@ -255,6 +255,8 @@ class PnLDetailStream(UnanetStream):
                     combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
                 self.logger.info(f"Processed pnl row {combined_dict}")
                 return combined_dict
+            else:
+                self.logger.info(f"pnl transaction not processed due to account type row: {combined_dict}")
         except Exception as e:
             self.logger.error(f"Error in post_process: {e} in row {row}")
             return None
