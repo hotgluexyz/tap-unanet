@@ -441,7 +441,9 @@ class UnanetStream(Stream):
                     if isinstance(order_keys, str):
                         order_keys = [order_keys]
                 else:
-                    order_keys = self.primary_keys + [self.replication_key]
+                    order_keys = self.primary_keys or []
+                    if self.replication_key: 
+                        order_keys.append(self.replication_key)
                 #Add order query 
                 order_queries = []
                 for order_key in order_keys:
