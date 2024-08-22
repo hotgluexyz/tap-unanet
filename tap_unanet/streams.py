@@ -47,6 +47,7 @@ class AccountsStream(UnanetStream):
     primary_keys = ["account_key"]
     table_name = "account"
     replication_key = None
+    order_by_key = ["a.account_key"]
     schema = th.PropertiesList(
         th.Property("account_key", th.IntegerType),
         th.Property("account_code", th.StringType),
@@ -185,7 +186,8 @@ class PnLDetailStream(UnanetStream):
     table_name = "general_ledger"
     primary_keys = ["gl_key"]
     replication_key = "post_date"
-    order_by_key = "gl.post_date"
+    order_by_key = ["gl.general_ledger_key", "gl.post_date"]
+    where_filters = "a.type IN ('R', 'E')"
     schema = th.PropertiesList(
         th.Property("gl_key", th.IntegerType),
         th.Property("feature", th.NumberType),
@@ -234,10 +236,6 @@ class PnLDetailStream(UnanetStream):
     # customer can represent many entities, here both customer_key and organization_key make reference to the same table
     # that's why there are 2 joins on the same table ticket: HGI-6156
     
-    @property
-    def query_total(self):
-        return f"SELECT COUNT(*) AS total FROM {self.schema_name}.general_ledger gl LEFT JOIN {self.schema_name}.account a ON gl.account_key = a.account_key"
-    
     def post_process(self, row, context):
         try:
             # Ignore selected catalog map all properties
@@ -246,15 +244,15 @@ class PnLDetailStream(UnanetStream):
                 "gl_key","feature","post_date","fiscal_month_key","account_key","organization_key","document_number","reference","description","transaction_date","quantity","debit_amount","credit_amount","project_key","person_key","customer_key","local_debit_amount","local_credit_amount","instance_debit_amount","instance_credit_amount","transaction_currency","local_currency","account_code","account_key","account_type","account_name","organization_code","customer_code","organization_name","customer_name","organization_type_key","customer_type_key","organization_type","customer_type","person_code","person_first_name","person_last_name","project_name"
             ]
             combined_dict = dict(zip(properties_list, row))
-            if combined_dict.get("account_type") in ["R", "E"]:
-                # Calculate net amount
-                self.logger.info("Calculating totals for net amount...")
-                if combined_dict.get("account_type") == "R":
-                    combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
-                elif combined_dict.get("account_type") == "E":
-                    combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
-                self.logger.info(f"Processed pnl row {combined_dict}")
-                return combined_dict
+            self.logger.info(f"Processing row {combined_dict}")
+            # Calculate net amount
+            self.logger.info("Calculating totals for net amount...")
+            if combined_dict.get("account_type") == "R":
+                combined_dict["net_amount"] = combined_dict.get("credit_amount") - combined_dict.get("debit_amount")
+            elif combined_dict.get("account_type") == "E":
+                combined_dict["net_amount"] = combined_dict.get("debit_amount") - combined_dict.get("credit_amount")
+            self.logger.info(f"Processed pnl row {combined_dict}")
+            return combined_dict
         except Exception as e:
             self.logger.error(f"Error in post_process: {e} in row {row}")
             return None

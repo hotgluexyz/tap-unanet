@@ -420,6 +420,24 @@ class UnanetStream(Stream):
             return None
 
     def request_records(self, context: dict | None) -> Iterable[dict]:
+        # get order_query
+        #Override oder_by key if present
+        if self.order_by_key:
+            self.logger.info(f"ORDER BY KEY {self.order_by_key}")
+            order_keys = self.order_by_key
+            if isinstance(order_keys, str):
+                order_keys = [order_keys]
+        else:
+            order_keys = self.primary_keys or []
+            if self.replication_key: 
+                order_keys.append(self.replication_key)
+        #Add order query 
+        self.logger.info(f"ORDER KEYS {order_keys}")
+        order_queries = []
+        for order_key in order_keys:
+            order_queries.append(f"{order_key} ASC")
+        order_query = f" ORDER BY {', '.join(order_queries)}"
+        # request records
         while self.paginate:
             selected_column_names = list(self.get_selected_schema()["properties"].keys())
             selected_column_names = ", ".join(selected_column_names)
@@ -435,11 +453,8 @@ class UnanetStream(Stream):
                     # for now support additional filters for incremental streams only
                     if self.where_filters:
                         query = query + f" AND ({self.where_filters})"
-                order_by_key = self.replication_key
-                #Override oder_by key if present
-                if self.order_by_key:
-                    order_by_key = self.order_by_key
-                query = query + f" ORDER BY {order_by_key} ASC"
+            if order_query:
+                query = query + order_query
             offset = self.next_page_token(context)
             query = (
                 query + f" OFFSET {offset} ROWS FETCH NEXT {self.page_size} ROWS ONLY"
