@@ -47,6 +47,7 @@ class AccountsStream(UnanetStream):
     primary_keys = ["account_key"]
     table_name = "account"
     replication_key = None
+    order_by_key = ["a.account_key"]
     schema = th.PropertiesList(
         th.Property("account_key", th.IntegerType),
         th.Property("account_code", th.StringType),

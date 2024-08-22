@@ -445,6 +445,7 @@ class UnanetStream(Stream):
                     if self.replication_key: 
                         order_keys.append(self.replication_key)
                 #Add order query 
+                self.logger.info(f"ORDER KEYS {order_keys}")
                 order_queries = []
                 for order_key in order_keys:
                     order_queries.append(f"{order_key} ASC")
