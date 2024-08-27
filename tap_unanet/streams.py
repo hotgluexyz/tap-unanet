@@ -86,7 +86,7 @@ class CustomersStream(UnanetStream):
     name = "customers"
     primary_keys = ["customer_key"]
     table_name = "customer"
-    replication_key = "last_updated_timestamp"
+    replication_key = None
     schema = th.PropertiesList(
         th.Property("customer_key", th.IntegerType),
         th.Property("customer_code", th.StringType),
@@ -121,7 +121,25 @@ class CustomersStream(UnanetStream):
         th.Property("created_timestamp", th.DateTimeType),
         th.Property("currency_code_key", th.IntegerType),
         th.Property("default_person_org_flag", th.StringType),
+        th.Property("customer_type", th.StringType),
     ).to_dict()
+
+    @property
+    def query(self):
+        query = f"SELECT c.customer_key,c.customer_code,c.customer_name,c.customer_type_key,c.customer_size,c.account_number,c.sic_code,c.classification,c.industry,c.sector,c.stock_symbol,c.url,c.active,c.financial_org,c.legal_entity,c.legal_entity_key,c.default_gl_post_org_key,c.entry_allowed,c.begin_date,c.end_date,c.entry_allowed,c.recipient_name_1099,c.vendor_1099,c.federal_tax_id,c.federal_tax_id_type,c.email_1099,c.last_project_code_seq,c.start_with_project_code_seq,c.transact_elimination_flag,c.last_updated_timestamp,c.created_timestamp,c.currency_code_key,c.default_person_org_flag,ct.customer_type FROM {self.schema_name}.{self.table_name} c LEFT JOIN {self.schema_name}.customer_type ct ON c.customer_type_key = ct.customer_type_key"
+        return query
+    
+    def post_process(self, row, context):
+        try:
+            # Ignore selected catalog map all properties
+            properties_list = [
+                "customer_key","customer_code","customer_name","customer_type_key","customer_size","account_number","sic_code","classification","industry","sector","stock_symbol","url","active","financial_org","legal_entity","legal_entity_key","default_gl_post_org_key","entry_allowed","begin_date","end_date","entry_allowed","recipient_name_1099","vendor_1099","federal_tax_id","federal_tax_id_type","email_1099","last_project_code_seq","start_with_project_code_seq","transact_elimination_flag","last_updated_timestamp","created_timestamp","currency_code_key","default_person_org_flag","customer_type"
+            ]
+            combined_dict = dict(zip(properties_list, row))
+            return combined_dict
+        except Exception as e:
+            self.logger.error(f"Error in post_process: {e} in row {row}")
+            return None
 
 
 class PersonsStream(UnanetStream):
