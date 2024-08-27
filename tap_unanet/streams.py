@@ -86,7 +86,7 @@ class CustomersStream(UnanetStream):
     name = "customers"
     primary_keys = ["customer_key"]
     table_name = "customer"
-    replication_key = "last_updated_timestamp"
+    replication_key = None
     schema = th.PropertiesList(
         th.Property("customer_key", th.IntegerType),
         th.Property("customer_code", th.StringType),
